@@ -2,11 +2,12 @@
 
 namespace RicLeP\SocialLogin;
 
-
+use Laravel\Spark\Spark;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\Provider;
+//use Laravel\Spark\Contracts\Repositories\UserRepository as UserRepositoryContract;
 
 class SocialAccountService
 {
@@ -45,10 +46,13 @@ class SocialAccountService
 
 		if (!$user) {
 			$user = new User();
+
 			$user->name = $providerUser->getName();
 			$user->email = $providerUser->getEmail();
 			$user->password = Hash::make(str_random(100)); // we are generating this account so add a crazy password!
 			$user->last_read_announcements_at = Carbon::now();
+			$user->trial_ends_at = Carbon::now()->addDays(Spark::trialDays());
+
 			$user->save();
 		}
 
