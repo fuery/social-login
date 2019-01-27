@@ -6,8 +6,13 @@ use Laravel\Spark\Spark;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Socialite\Contracts\Provider;
-//use Laravel\Spark\Contracts\Repositories\UserRepository as UserRepositoryContract;
+
+use Laravel\Spark\Http\Requests\Auth\StripeRegisterRequest;
+use Laravel\Spark\Http\Requests\Auth\BraintreeRegisterRequest;
+use Laravel\Spark\Events\Auth\UserRegistered;
+use Laravel\Spark\Contracts\Interactions\Auth\Register as SparkRegister;
 
 class SocialAccountService
 {
@@ -45,19 +50,27 @@ class SocialAccountService
 		$user = User::whereEmail($providerUser->getEmail())->first();
 
 		if (!$user) {
-			$user = new User();
 
-			$user->name = $providerUser->getName();
-			$user->email = $providerUser->getEmail();
-			$user->password = Hash::make(str_random(100)); // we are generating this account so add a crazy password!
-			$user->last_read_announcements_at = Carbon::now();
-			$user->trial_ends_at = Carbon::now()->addDays(Spark::trialDays());
+			$attributes = [
+				'email' => $providerUser->getEmail(),
+                'name' => $providerUser->getName(),
+                'password' => Hash::make(str_random(100)) // we are generating this account so add a crazy password!
+            ];
 
-            if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
-                $user->sendEmailVerificationNotification();
-            }
+            if (Spark::billsUsingBraintree()) {
+            	$request = BraintreeRegisterRequest::create('', 'GET', $attributes);
+        	} else {
+            	$request = StripeRegisterRequest::create('', 'GET', $attributes);
+        	}
 
-			$user->save();
+            $user = Spark::interact(SparkRegister::class, [$request]);
+
+        	event(new UserRegistered($user));
+
+	        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+	            $user->sendEmailVerificationNotification();
+	        }
+
 		}
 
 		$account->user()->associate($user);
