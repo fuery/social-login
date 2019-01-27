@@ -53,6 +53,10 @@ class SocialAccountService
 			$user->last_read_announcements_at = Carbon::now();
 			$user->trial_ends_at = Carbon::now()->addDays(Spark::trialDays());
 
+            if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+                $user->sendEmailVerificationNotification();
+            }
+
 			$user->save();
 		}
 
