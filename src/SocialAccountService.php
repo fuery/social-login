@@ -54,6 +54,7 @@ class SocialAccountService
 			$attributes = [
 				'email' => $providerUser->getEmail(),
                 'name' => $providerUser->getName(),
+                'generated_password' => true,
                 'password' => Hash::make(str_random(100)) // we are generating this account so add a crazy password!
             ];
 
