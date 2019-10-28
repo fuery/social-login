@@ -1,5 +1,5 @@
 {
-    "name": "ep4/social-login",
+    "name": "fuery/social-login",
     "description": "An implementation of Laravel Socialite. Initially built for Laravel Spark",
 	"keywords": ["laravel", "spark", "laravel spark", "laravel socialite", "social login", "facebook", "twitter", "github"],
 	"license": "MIT",
