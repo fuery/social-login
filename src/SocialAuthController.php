@@ -3,7 +3,7 @@
 namespace RicLeP\SocialLogin;
 
 use Laravel\Socialite\Facades\Socialite;
-use App\Spark;
+//use App\Spark;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\Controller;
@@ -20,7 +20,7 @@ class SocialAuthController extends Controller
         $user = $service->createOrGetUser(Socialite::driver($provider));
 
         auth()->login($user);
-
+/*
         if (Spark::usesTwoFactorAuth() && $user->uses_two_factor_auth) {
             auth()->logout();
 
@@ -33,7 +33,7 @@ class SocialAuthController extends Controller
 
             return redirect('login/token');
         }
-
+*/
         return redirect()->to('/home');
     }
 }
